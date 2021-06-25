@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Automobile Price Prediction Application</title>
+    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</head>
+<body class="bg-dark">
+    <div class="container">
+        <div class="row">
+            <div class="card mt-50" style="width=100%; height=100%; background-color:#009966">
+                <div class="card-header" style="color : white; text-align: center; background-color:#000099">
+                    <h1 style="font-family: cursive;">Welcome to Automobile Price Prediction</h1>
+                </div>
+                <div class="card-body">
+                    <div class="col-12" style="text-align: center; color : white; background-color:#990000">
+                        <h5 style="font-family: cursive;">This app predicts the price of a car you want to sell. Try filling the details below:</h5>
+                    </div>
+                    <br>
+                    <form method="post" accept-charset="utf-8" name="ModelForm">
+                        <div class="col-md-10 form-group" style="text-align: left">
+                            <label><strong style="font-family: cursive; color : white; background-color:#000033">Select the company:</strong></label>
+                            <select class="selectpicker form-control" id="company" name="company" required="1" onchange="load_car_models(this.id, 'car_models')">
+
+                                {% for company in companies %}
+                                <option value="{{ company }}">{{company}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-10 form-group" style="text-align: left">
+                            <label><strong style="font-family: cursive; color : white; background-color:#000033">Select the model:</strong></label>
+                            <select class="selectpicker form-control" id="car_models" name="car_models" required="1">
+
+                            </select>
+                        </div>
+
+                        <div class="col-md-10 form-group" style="text-align: left">
+                            <label><strong style="font-family: cursive; color : white; background-color:#000033">Select Year of Purchase:</strong></label>
+                            <select class="selectpicker form-control" id="year" name="year" required="1">
+                                {% for year in years %}
+                                <option value="{{ year }}">{{year}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-10 form-group" style="text-align: left">
+                            <label><strong style="font-family: cursive; color : white; background-color:#000033">Select the Fuel Type:</strong></label>
+                            <select class="selectpicker form-control" id="fuel_type" name="fuel_type" required="1">
+                                {% for fuel in fuel_types %}
+                                <option value="{{ fuel }}">{{ fuel }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-10 form-group" style="text-align: left">
+                            <label><strong style="font-family: cursive; color : white; background-color:#000033">Enter the Number of Kilometres that the car has travelled:</strong></label>
+                            <input type="text" class="form-control" id="kilo_driven" name="kilo_driven" placeholder="Enter the Kms Driven">
+                        </div>
+
+                        <div class="col-md-10 form-group" style="text-align: center">
+
+                            <button class="btn btn-danger form-control" onclick="send_data()" style="font-family: cursive; color : white">Predict Price</button>
+                        </div>
+                    </form>
+                    <br>
+                    <div class="row">
+                        <div class="col-12" style="text-align: center; color : white">
+                            <h4><span id ="prediction"></span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+    function load_car_models (company_id, car_model_id) {
+        var company = document.getElementById(company_id);
+        var car_model = document.getElementById(car_model_id);
+        car_model.value="";
+        car_model.innerHTML = "";
+        console.log(company.value)
+        {% for company in companies %}
+            if( company.value == "{{ company }}")
+            {
+                {% for model in car_models %}
+                    {% if company in model %}
+
+                        var newOption = document.createElement("option");
+                        newOption.value = "{{ model }}";
+                        newOption.innerHTML = "{{ model }}";
+                        car_model.options.add(newOption);
+                    {% endif %}
+                {% endfor %}
+            }
+          {% endfor %}
+    }
+
+    function form_handler (event) {
+        event.preventDefault();
+    }
+
+    function send_data() {
+        document.querySelector('form').addEventListener('submit', form_handler);
+
+        var fd = new FormData(document.querySelector("form"));
+
+        var xhr = new XMLHttpRequest({mozSystem: true})
+
+        xhr.open('POST', '/predict', true);
+        document.getElementById('prediction').innerHTML="Wait! Predincting the Price...";
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState == XMLHttpRequest.DONE){
+                document.getElementById('prediction').innerHTML="Prdicted Price: INR "+xhr.responseText;
+            }
+        };
+        xhr.onload = function(){};
+
+        xhr.send(fd);
+    }
+</script>
+</body>
+</html>
+
